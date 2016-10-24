@@ -62,18 +62,6 @@ def test_is_tensor(data, expected):
     assert is_tensor(data) == expected
 
 
-@pytest.mark.parametrize("data, expected", [
-    ([], False),
-    ([1], False),
-    ([[1, 2]], False),
-    ([[]], False),
-    ([[AA([1, 2])]], False),
-    ([AA([1, 2])], True),
-    ([AA([1, 2]), AA([])], True),
-])
-def test_is_tensor_list(data, expected):
-    assert is_tensor_list(data) == expected
-
 def test_sanitize_dtype_numpy():
     for dtype in ['float', 'float32', np.float32, int]:
         assert sanitize_dtype_numpy(dtype) == np.float32, dtype
@@ -90,7 +78,7 @@ def test_sanitize_dtype_cntk():
     ([1], np.float32),
     ([[1, 2]], np.float64),
     (2, np.float64),
-    (np.asarray([1,2], dtype=np.float32), np.float64),
+    (AA([1,2], dtype=np.float32), np.float64),
 ])
 def test_sanitize_input(data, dtype):
     inp = sanitize_input(data, dtype)
@@ -101,8 +89,8 @@ def test_get_data_type():
     pa = parameter(init=2)
     pl = placeholder_variable(shape=(2))
     c = constant(value=3.0)
-    n32 = np.asarray(1, dtype=np.float32)
-    n64 = np.asarray(1, dtype=np.float64)
+    n32 = AA(1, dtype=np.float32)
+    n64 = AA(1, dtype=np.float64)
 
     assert get_data_type(pa) == np.float32
     assert get_data_type(pa, n32) == np.float32
@@ -113,4 +101,45 @@ def test_get_data_type():
     assert get_data_type(pl, n64) == np.float64
     assert get_data_type(pl, n32) == np.float32
     assert get_data_type(pl, pl) == None
+
+@pytest.mark.parametrize("shape, batch, expected", [
+    ((2,3), [[1,2], []], False),
+    (2, [[1,2], []], True),
+    (1, [[1,2], []], False),
+    (10, [[1], []], True),
+    (1, [[1], []], False),
+    ((2), AA([1,2]), False),
+    ((2), AA(1), False),
+    ((2), [[[1],[2]]], False),
+])
+def test_is_one_hot(shape, batch, expected):
+    i1 = input_variable(shape)
+    assert is_one_hot(i1, batch) == expected
+
+@pytest.mark.parametrize("shape, batch, expected", [
+    ((1,), [AA([[30.]]), AA([[40], [50]])], True),
+
+    (1, [[1,2]], True),
+    (1, [1,2], False),
+    ((1,2), AA([[[1,1]],[[2,2]]]), False),
+    ((2,), AA([[[1,1],[2,2]]]), True),
+    ((1,2), AA([[[1,1],[2,2]]]), False),
+    ((2,2), AA([[[1,1],[2,2]]]), False),
+    ((2,2), AA([[[[1,1],[2,2]]]]), True),
+    ((1,), [[[30.]], [[40], [50]]], True),
+    ((1,), [AA([[30.]]), AA([[40], [50]])], True),
+    # one-hot
+    (10, [[1,5],[2],[3]], True),
+    (10, [1,2,3], False),
+    # exception handling
+    ((2,2), AA([[1,1],[2,2]]), ValueError),
+    (1, [[[1,2]]], ValueError),
+])
+def test_has_seq_dim(shape, batch, expected):
+    i1 = input_variable(shape)
+    if expected in [False, True]:
+        assert has_seq_dim(i1, batch) == expected
+    else:
+        with pytest.raises(expected):
+            has_seq_dim(i1, batch)
     

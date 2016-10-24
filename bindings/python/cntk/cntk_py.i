@@ -31,8 +31,9 @@
 %rename("%(utitle)s", %$isfunction, notregexmatch$name="RandomUniform") "";
 %rename("%(utitle)s", %$isvariable) "";
 
-%template() std::vector<size_t>;
 %template() std::vector<bool>;
+%template() std::vector<size_t>;
+%template() std::vector<float>;
 %template() std::vector<double>;
 %template() std::vector<std::vector<size_t>>;
 %template() std::vector<std::vector<float>>;
@@ -953,6 +954,31 @@ fail:
 // end NDMask
 
 //
+// Value
+//
+%extend CNTK::Value {
+    static CNTK::ValuePtr CNTK::Value::CreateDenseFloat(const CNTK::NDShape& sampleShape, const std::vector<std::vector<float>>& sequences, 
+        const CNTK::DeviceDescriptor& device, bool readOnly = false) {
+        return CNTK::Value::Create<float>(sampleShape, sequences, device, readOnly);
+    }
+
+    static CNTK::ValuePtr CNTK::Value::CreateDenseDouble(const CNTK::NDShape& sampleShape, const std::vector<std::vector<double>>& sequences, 
+        const CNTK::DeviceDescriptor& device, bool readOnly = false) {
+        return CNTK::Value::Create<double>(sampleShape, sequences, device, readOnly);
+    }
+
+    static CNTK::ValuePtr CNTK::Value::CreateOneHotFloat(size_t vocabularySize, const std::vector<std::vector<size_t>>& oneHotSequences, 
+        const CNTK::DeviceDescriptor& device, bool readOnly = false) {
+        return CNTK::Value::Create<float>(vocabularySize, oneHotSequences, device, readOnly);
+    }
+
+    static CNTK::ValuePtr CNTK::Value::CreateOneHotDouble(size_t vocabularySize, const std::vector<std::vector<size_t>>& oneHotSequences, 
+        const CNTK::DeviceDescriptor& device, bool readOnly = false) {
+        return CNTK::Value::Create<double>(vocabularySize, oneHotSequences, device, readOnly);
+    }
+}
+
+//
 // NDArrayView
 //
 %extend CNTK::NDArrayView {
@@ -1137,7 +1163,7 @@ DATA_TYPE.__eq__ = lambda a,b: EQ(a,b)
 %py_hash_for(NDShape)
 
 %py_eq_for(Axis, Axis_eq)
-%py_hash_for(Axis, Axis_eq)
+%py_hash_for(Axis)
 
 %py_eq_for(DeviceDescriptor, DeviceDescriptor_eq)
 

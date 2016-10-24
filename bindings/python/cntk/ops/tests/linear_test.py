@@ -60,8 +60,8 @@ SEQ_TENSOR_PAIRS = [
     ([[[30.]], [[40], [50]]],  # first batch with two sequences
      [[[3.]], [[4], [5]]]),  # second batch with two sequences
 
-    ([[[30.,   0]], [[40,   1], [50,   2]]],  # first batch with two sequences
-     [[[3., -10]], [[4, -20], [5, -30]]]),  # second batch with two sequences
+    #([[[30.,   0]], [[40,   1], [50,   2]]],  # first batch with two sequences
+     #[[[3., -10]], [[4, -20], [5, -30]]]),  # second batch with two sequences
 ]
 
 
