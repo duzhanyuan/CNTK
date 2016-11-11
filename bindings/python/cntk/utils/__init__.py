@@ -526,11 +526,23 @@ def sanitize_batch(var, batch, seq_starts=None, dtype=None, device=None):
         ndav = create_NDArrayView_from_NumPy(batch, device)
         return cntk_py.Value(ndav, mask)
 
-    # batch is sparse
-    if sparse.issparse(batch):
-        if not sparse.isspmatrix_csr(batch):
-            batch = batch.tocsr()
+    batch_is_sparse = sparse.issparse(batch) 
+    batch_has_sparse_elements = sparse.issparse(batch[0])
 
+    var_is_sparse = var.is_sparse
+    if (batch_is_sparse or batch_has_sparse_elements) and not var_is_sparse:
+        raise ValueError("Variable is sparse, but provided data is dense")
+    if not batch_is_sparse and var_is_sparse:
+        raise ValueError("Variable is dense, but provided data is sparse")
+
+    if batch_is_sparse or batch_has_sparse_elements:
+        if sparse.issparse(batch)
+        if not sparse.isspmatrix_csr(batch):
+            raise ValueError("only CSR is supported as of now. Please " +
+                    "convert your data using 'batch.tocsr()'")
+
+        # TODO remove tuple(reversed()) once the shape reversion in SWIG has
+        # entered master
         ndav = cntk_py.NDArrayView(tuple(reversed(batch.shape)), batch.data,
                 batch.indptr, batch.indices, device, False)
         value = cntk_py.Value(ndav)
