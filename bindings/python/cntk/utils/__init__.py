@@ -274,29 +274,6 @@ def is_one_hot(var, data):
             and expected_more_than_one_int
 
 
-def get_temp_filename(directory=None):
-    '''
-    Create and return a temporary filename.
-
-    Args:
-        directory (str): optional directory, in which the temporary file will
-        be created
-
-    Returns:
-        Filename of the temporary file
-    '''
-    import tempfile
-
-    # We have to use NamedTemporaryFile and close it, because the obvious first
-    # choice, mkstemp(), would later fail in cntk.exe because the file would
-    # still be locked.
-    tf = tempfile.NamedTemporaryFile(prefix='_input_', suffix='.txt',
-                                     dir=directory, delete=False)
-    tf.close()
-
-    return tf.name
-
-
 def sanitize_shape(shape):
     """
     If shape is scalar, it creates a tuple out of it.
